@@ -413,6 +413,12 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
 
         if (!user) throw new Error('Not logged in');
 
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+
         const bookingData = {
           trainer_id: b.trainerId,
           user_id: user.id,
@@ -471,10 +477,11 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
         await logActivity({
           actorId: user.id,
           actorEmail: user.email,
+          actorName: userProfile?.full_name || user.email,
           actorType: 'user',
           action: LOG_ACTIONS.BOOKING_CREATED,
           category: 'booking',
-          description: `Booked ${b.sessionName} with ${b.trainerName}`,
+          description: `${userProfile?.full_name || 'User'} booked ${b.sessionName} with ${b.trainerName}`,
           metadata: {
             trainer_id: b.trainerId,
             trainer_name: b.trainerName,
@@ -483,6 +490,7 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
             time: b.time,
             amount: b.amount,
             reference,
+            user_name: userProfile?.full_name,
           },
           status: 'success',
         });
@@ -490,6 +498,7 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
         await logActivity({
           actorId: user.id,
           actorEmail: user.email,
+          actorName: userProfile?.full_name || user.email,
           actorType: 'user',
           action: LOG_ACTIONS.PAYMENT_SUCCESS,
           category: 'payment',
@@ -498,6 +507,7 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
             reference,
             amount: b.amount,
             trainer_name: b.trainerName,
+            user_name: userProfile?.full_name,
           },
           status: 'success',
         });

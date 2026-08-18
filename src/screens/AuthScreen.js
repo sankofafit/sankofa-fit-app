@@ -115,16 +115,23 @@ export default function AuthScreen() {
       if (loginError) {
         setError(loginError.message);
       } else if (data?.user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', data.user.id)
+          .single();
+
         await logActivity({
           actorId: data.user.id,
           actorEmail: data.user.email,
+          actorName: profile?.full_name || data.user.email,
           actorType: 'user',
           action: LOG_ACTIONS.AUTH_LOGIN,
           category: 'auth',
-          description: 'User logged in to app',
+          description: `${profile?.full_name || 'User'} logged in to app`,
           metadata: {
             platform: Platform.OS,
-            timestamp: new Date().toISOString(),
+            user_name: profile?.full_name,
           },
           status: 'success',
         });

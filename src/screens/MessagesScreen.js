@@ -409,6 +409,7 @@ export default function MessagesScreen({
   const [loadingTrainers, setLoadingTrainers] = useState(true);
   const [activeTrainerId, setActiveTrainerId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [trainerOwnerIds, setTrainerOwnerIds] = useState({});
   const [unreadCounts, setUnreadCounts] = useState({});
   const inboxReloadReadyRef = useRef(false);
@@ -418,10 +419,26 @@ export default function MessagesScreen({
 
   useEffect(() => {
     const loadUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        setCurrentUser(user);
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('full_name, email')
+            .eq('id', user.id)
+            .single();
+
+          setCurrentUserProfile(profile);
+          console.log('User profile:', profile);
+        }
+      } catch (e) {
+        console.log('loadUser error:', e);
+      }
     };
     loadUser();
   }, []);
@@ -855,20 +872,22 @@ export default function MessagesScreen({
       await logActivity({
         actorId: currentUser.id,
         actorEmail: currentUser.email,
+        actorName: currentUserProfile?.full_name || currentUser.email,
         actorType: 'user',
         action: LOG_ACTIONS.MESSAGE_SENT,
         category: 'message',
-        description: 'User sent message to trainer',
+        description: `${currentUserProfile?.full_name || 'User'} sent message to trainer`,
         metadata: {
           trainer_id: tid,
           message_id: data?.id,
+          user_name: currentUserProfile?.full_name,
         },
         status: 'success',
       });
     } catch (e) {
       console.log('sendSupabaseMessage error:', e);
     }
-  }, [currentUser, getTrainerOwnerId]);
+  }, [currentUser, currentUserProfile, getTrainerOwnerId]);
 
   const openChat = useCallback(async (trainerId) => {
     const tid = catalogTrainerId(trainerId) || trainerId;
