@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Sankofa Fit",
+    "slug": "sankofafit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "backgroundColor": "#1B2F6B",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sankofafit.app",
+      "infoPlist": {
+        "NSMotionUsageDescription": "Sankofa Fit uses motion data to count your daily steps and help you reach your fitness goals.",
+        "NSLocationWhenInUseUsageDescription": "Sankofa Fit uses your location to find nearby gyms and show distances.",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B2F6B"
+      },
+      "package": "com.sankofafit.app",
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1B2F6B",
+          "sounds": [],
+          "mode": "production"
+        }
+      ]
+    ]
+  }
+}
