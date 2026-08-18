@@ -81,12 +81,14 @@ export default function TrainerReviewModal({
         actorType: 'user',
         action: LOG_ACTIONS.REVIEW_SUBMITTED,
         category: 'review',
-        description: `Reviewed trainer ${trainer?.name}`,
+        description: `Reviewed ${trainer?.name} - ${rating} stars`,
         metadata: {
           trainer_id: trainer?.id,
+          trainer_name: trainer?.name,
           rating,
           booking_id: bookingId,
         },
+        status: 'success',
       });
 
       Alert.alert('⭐ Review Submitted!', 'Thank you for your feedback!');

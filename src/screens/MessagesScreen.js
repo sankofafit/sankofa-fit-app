@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
+import { logActivity, LOG_ACTIONS } from '../utils/activityLogger';
 import { useGoHome } from '../utils/navigationEvents';
 import { catalogTrainerId, useMessages } from '../context/MessagesContext';
 
@@ -848,7 +849,22 @@ export default function MessagesScreen({
 
       if (error) {
         console.log('SEND FAILED:', error.message);
+        return;
       }
+
+      await logActivity({
+        actorId: currentUser.id,
+        actorEmail: currentUser.email,
+        actorType: 'user',
+        action: LOG_ACTIONS.MESSAGE_SENT,
+        category: 'message',
+        description: 'User sent message to trainer',
+        metadata: {
+          trainer_id: tid,
+          message_id: data?.id,
+        },
+        status: 'success',
+      });
     } catch (e) {
       console.log('sendSupabaseMessage error:', e);
     }

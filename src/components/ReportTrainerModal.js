@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { logActivity, LOG_ACTIONS } from '../utils/activityLogger';
 
 const REPORT_REASONS = [
   'Inappropriate behaviour',
@@ -51,6 +52,21 @@ export default function ReportTrainerModal({ visible, onClose, trainer }) {
       });
 
       if (error) throw error;
+
+      await logActivity({
+        actorId: user.id,
+        actorEmail: user.email,
+        actorType: 'user',
+        action: LOG_ACTIONS.REPORT_SUBMITTED,
+        category: 'report',
+        description: `Reported ${trainer?.name}: ${selectedReason}`,
+        metadata: {
+          trainer_id: trainer?.id,
+          trainer_name: trainer?.name,
+          reason: selectedReason,
+        },
+        status: 'warning',
+      });
 
       Alert.alert(
         '✅ Report Submitted',

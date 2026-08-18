@@ -468,20 +468,13 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
           trainerId: b.trainerId,
         });
 
-        const { data: userProfile } = await supabase
-          .from('users')
-          .select('full_name')
-          .eq('id', user.id)
-          .maybeSingle();
-
         await logActivity({
           actorId: user.id,
           actorEmail: user.email,
-          actorName: userProfile?.full_name,
           actorType: 'user',
           action: LOG_ACTIONS.BOOKING_CREATED,
           category: 'booking',
-          description: `Booked session with ${b.trainerName}`,
+          description: `Booked ${b.sessionName} with ${b.trainerName}`,
           metadata: {
             trainer_id: b.trainerId,
             trainer_name: b.trainerName,
@@ -500,12 +493,13 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
           actorType: 'user',
           action: LOG_ACTIONS.PAYMENT_SUCCESS,
           category: 'payment',
-          description: `Payment GHS ${b.amount} successful`,
+          description: `Payment GHS ${b.amount} for ${b.sessionName}`,
           metadata: {
             reference,
             amount: b.amount,
             trainer_name: b.trainerName,
           },
+          status: 'success',
         });
 
         console.log('Booking saved successfully!');
