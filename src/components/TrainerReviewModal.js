@@ -26,7 +26,10 @@ export default function TrainerReviewModal({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      Alert.alert('Rating Required', 'Please select a star rating');
+      Alert.alert(
+        'Rating Required',
+        'Please select a star rating',
+      );
       return;
     }
 
@@ -42,6 +45,12 @@ export default function TrainerReviewModal({
         .select('full_name')
         .eq('id', user.id)
         .single();
+
+      const userName = userProfile?.full_name
+        || user.email
+        || 'User';
+
+      console.log('Reviewer name:', userName);
 
       if (bookingId) {
         const { data: existing } = await supabase
@@ -61,39 +70,43 @@ export default function TrainerReviewModal({
         }
       }
 
-      const { error } = await supabase.from('trainer_reviews').insert({
-        trainer_id: trainer.id,
-        user_id: user.id,
-        booking_id: bookingId || null,
-        rating,
-        review: review.trim(),
-        user_name: userProfile?.full_name || 'Anonymous',
-      });
+      const { error } = await supabase
+        .from('trainer_reviews')
+        .insert({
+          trainer_id: trainer.id,
+          user_id: user.id,
+          booking_id: bookingId || null,
+          rating,
+          review: review.trim(),
+          user_name: userName,
+        });
 
-      if (error) {
-        console.log('Review error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       await logActivity({
         actorId: user.id,
         actorEmail: user.email,
+        actorName: userName,
         actorType: 'user',
         action: LOG_ACTIONS.REVIEW_SUBMITTED,
         category: 'review',
-        description: `Reviewed ${trainer?.name} - ${rating} stars`,
+        description: `${userName} reviewed ${trainer?.name} - ${rating} stars`,
         metadata: {
           trainer_id: trainer?.id,
           trainer_name: trainer?.name,
           rating,
           booking_id: bookingId,
+          user_name: userName,
         },
         status: 'success',
       });
 
-      Alert.alert('⭐ Review Submitted!', 'Thank you for your feedback!');
+      Alert.alert(
+        '⭐ Review Submitted!',
+        'Thank you for your feedback!',
+      );
 
-      onReviewSubmitted?.();
+      onReviewSubmitted && onReviewSubmitted();
       onClose();
       setRating(0);
       setReview('');
