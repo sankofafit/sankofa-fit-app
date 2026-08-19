@@ -19,6 +19,7 @@ import { supabase } from '../lib/supabase';
 import { logActivity, LOG_ACTIONS } from '../utils/activityLogger';
 import { useGoHome } from '../utils/navigationEvents';
 import { catalogTrainerId, useMessages } from '../context/MessagesContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 
 export { getUnreadCount } from '../utils/messageStore';
 
@@ -402,6 +403,7 @@ export default function MessagesScreen({
   onFindTrainer,
 }) {
   const insets = useSafeAreaInsets();
+  const { isEnabled } = useFeatureFlags();
   const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
   const [allMessages, setAllMessages] = useState({});
   const [bookedTrainers, setBookedTrainers] = useState([]);
@@ -1045,6 +1047,59 @@ export default function MessagesScreen({
       );
     });
   }, [allMessages, allTrainers, bookedTrainers]);
+
+  if (!isEnabled('trainer_chat')) {
+    return (
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          styles.root,
+          { transform: [{ translateX: slideAnim }] },
+        ]}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: '#080C1C',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleClose}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            style={{ position: 'absolute', top: insets.top + 8, left: 16 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Ionicons name="lock-closed-outline" size={48} color="rgba(107,123,153,0.4)" />
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 18,
+              fontWeight: '800',
+              marginTop: 16,
+              textAlign: 'center',
+            }}
+          >
+            Chat Coming Soon
+          </Text>
+          <Text
+            style={{
+              color: '#6B7B99',
+              fontSize: 14,
+              textAlign: 'center',
+              marginTop: 8,
+              lineHeight: 22,
+            }}
+          >
+            Messaging will be available when we launch payments
+          </Text>
+        </View>
+      </Animated.View>
+    );
+  }
 
   return (
     <Animated.View

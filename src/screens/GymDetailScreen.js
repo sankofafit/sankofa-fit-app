@@ -20,7 +20,7 @@ import RemoteImage from '../components/RemoteImage';
 import { getClassImageUri } from '../data/mediaUrls';
 import GymMembershipModal from '../components/explore/GymMembershipModal';
 import { useBooking } from '../context/BookingContext';
-import useFeatureFlags from '../hooks/useFeatureFlags';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { getMembershipPlansForGym } from '../data/gymMembership';
 import { getClassAccentColor } from '../data/exploreClassColors';
 import {
@@ -193,16 +193,24 @@ function ClassCard({ cls, isToday, highlighted, onBookDropIn, bookingEnabled = t
           <View
             style={[
               styles.bookDropInBtnNew,
-              { backgroundColor: 'rgba(107,123,153,0.3)' },
+              {
+                backgroundColor: 'rgba(107,123,153,0.2)',
+                borderWidth: 1,
+                borderColor: 'rgba(107,123,153,0.3)',
+              },
             ]}
           >
-            <Text style={{
-              color: '#6B7B99',
-              fontSize: 13,
-              fontWeight: '700',
-              textAlign: 'center',
-            }}>
-              🔒 Coming Soon
+            <Ionicons name="lock-closed-outline" size={16} color="#6B7B99" />
+            <Text
+              style={{
+                color: '#6B7B99',
+                fontSize: 13,
+                fontWeight: '700',
+                textAlign: 'center',
+                marginTop: 4,
+              }}
+            >
+              Booking Coming Soon
             </Text>
           </View>
         )}
@@ -728,14 +736,43 @@ export default function GymDetailScreen({
                         <Text style={styles.planFeatureText}>{feature}</Text>
                       </View>
                     ))}
-                    <TouchableOpacity delayPressIn={0}
-                      onPress={() => openMembershipSheet(plan)}
-                      activeOpacity={0.75}
-                      hitSlop={TAP_HIT}
-                      style={styles.membershipCta}
-                    >
-                      <Text style={styles.membershipCtaText}>{plan.cta}</Text>
-                    </TouchableOpacity>
+                    {isEnabled('gym_membership') ? (
+                      <TouchableOpacity
+                        delayPressIn={0}
+                        onPress={() => openMembershipSheet(plan)}
+                        activeOpacity={0.75}
+                        hitSlop={TAP_HIT}
+                        style={styles.membershipCta}
+                      >
+                        <Text style={styles.membershipCtaText}>{plan.cta}</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <View
+                        style={[
+                          styles.membershipCta,
+                          {
+                            backgroundColor: 'rgba(107,123,153,0.2)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(107,123,153,0.3)',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                          },
+                        ]}
+                      >
+                        <Ionicons name="lock-closed-outline" size={16} color="#6B7B99" />
+                        <Text
+                          style={{
+                            color: '#6B7B99',
+                            fontSize: 15,
+                            fontWeight: '700',
+                          }}
+                        >
+                          Memberships Coming Soon
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 ))}
                 <Text style={styles.memberNote}>Already a member? Log in to check in</Text>

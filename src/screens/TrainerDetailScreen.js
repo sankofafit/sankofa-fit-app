@@ -29,7 +29,7 @@ import {
 } from '../lib/paystack';
 import { notifyUserAfterTrainerBooking } from '../lib/bookingService';
 import { logActivity, LOG_ACTIONS } from '../utils/activityLogger';
-import useFeatureFlags from '../hooks/useFeatureFlags';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { supabase } from '../lib/supabase';
 import { getAvailableDates, getAvailableSlots } from '../utils/trainerAvailability';
 import ReportTrainerModal from '../components/ReportTrainerModal';
@@ -1081,36 +1081,67 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={openBooking}
-                style={styles.bookSessionBtn}
+                style={[styles.bookButton, { flex: 2 }]}
               >
                 <LinearGradient
                   colors={['#F5C842', '#E5B832']}
-                  style={styles.bookSessionBtnInner}
+                  style={styles.bookButtonInner}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.bookSessionBtnText}>Book Session</Text>
+                  <View>
+                    <Text style={styles.bookButtonText}>Book a Session</Text>
+                    {trainerData?.sessions?.length > 0 ? (
+                      <Text style={styles.bookButtonSubtext}>
+                        From GHS{' '}
+                        {Math.min(...trainerData.sessions.map((s) => s.price))} per session
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.bookButtonArrow}>
+                    <Ionicons name="arrow-forward" size={20} color="#1B2F6B" />
+                  </View>
                 </LinearGradient>
               </TouchableOpacity>
             ) : (
               <View
                 style={[
-                  styles.bookSessionBtn,
-                  styles.bookSessionBtnInner,
-                  { backgroundColor: 'rgba(107,123,153,0.3)' },
+                  styles.bookButton,
+                  {
+                    flex: 2,
+                    backgroundColor: 'rgba(107,123,153,0.2)',
+                    borderRadius: 16,
+                    padding: 18,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 10,
+                    borderWidth: 1,
+                    borderColor: 'rgba(107,123,153,0.3)',
+                  },
                 ]}
               >
-                <Ionicons name="lock-closed-outline" size={16} color="#6B7B99" />
-                <Text
-                  style={{
-                    color: '#6B7B99',
-                    fontSize: 15,
-                    fontWeight: '700',
-                    marginLeft: 8,
-                  }}
-                >
-                  Booking Coming Soon
-                </Text>
+                <Ionicons name="lock-closed-outline" size={18} color="#6B7B99" />
+                <View>
+                  <Text
+                    style={{
+                      color: '#6B7B99',
+                      fontSize: 16,
+                      fontWeight: '700',
+                    }}
+                  >
+                    Booking Coming Soon
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#4A5568',
+                      fontSize: 12,
+                      marginTop: 2,
+                    }}
+                  >
+                    We are onboarding trainers now
+                  </Text>
+                </View>
               </View>
             )}
 

@@ -19,6 +19,7 @@ import TrainerAvatar from '../components/TrainerAvatar';
 import { GymCardSkeleton, TrainerCardSkeleton } from '../components/SkeletonCard';
 import { CLASS_IMAGES } from '../data/mediaUrls';
 import { useBooking } from '../context/BookingContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { useSidebar } from '../context/SidebarContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useMessages } from '../context/MessagesContext';
@@ -71,7 +72,7 @@ function classImageUrlFor(name) {
   return CLASS_IMAGES.HIIT;
 }
 
-function ClassTodayCard({ cls, onBook }) {
+function ClassTodayCard({ cls, onBook, bookingEnabled = true }) {
   const [imageError, setImageError] = useState(false);
   const uri = cls.imageUrl || cls.image || classImageUrlFor(cls.name);
 
@@ -93,14 +94,31 @@ function ClassTodayCard({ cls, onBook }) {
         <Text style={styles.classGym}>{cls.gym}</Text>
         <Text style={styles.classTime}>{cls.time}</Text>
         <Text style={styles.classPrice}>GHS {cls.price}</Text>
-        <TouchableOpacity
-          activeOpacity={0.75}
-          delayPressIn={0}
-          onPress={onBook}
-          style={styles.classBookBtnGold}
-        >
-          <Text style={styles.classBookBtnGoldText}>Book GHS {cls.price}</Text>
-        </TouchableOpacity>
+        {bookingEnabled ? (
+          <TouchableOpacity
+            activeOpacity={0.75}
+            delayPressIn={0}
+            onPress={onBook}
+            style={styles.classBookBtnGold}
+          >
+            <Text style={styles.classBookBtnGoldText}>Book GHS {cls.price}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={[
+              styles.classBookBtnGold,
+              {
+                backgroundColor: 'rgba(107,123,153,0.2)',
+                borderWidth: 1,
+                borderColor: 'rgba(107,123,153,0.3)',
+              },
+            ]}
+          >
+            <Text style={{ color: '#6B7B99', fontSize: 13, fontWeight: '700' }}>
+              Booking Coming Soon
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -113,6 +131,9 @@ export default function ExploreScreen() {
   const { openNotifications } = useNotifications();
   const { openMessages, unreadCount } = useMessages();
   const { openGym, openTrainer, bookClass } = useBooking();
+  const { isEnabled } = useFeatureFlags();
+  const classBookingEnabled = isEnabled('gym_class_booking');
+  const trainerBookingEnabled = isEnabled('trainer_session_booking');
   const [activeFilter, setActiveFilter] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [search, setSearch] = useState('');
@@ -549,6 +570,7 @@ export default function ExploreScreen() {
                     key={`explore-class-${cls.id}-${index}`}
                     cls={cls}
                     onBook={() => openClassBooking(cls)}
+                    bookingEnabled={classBookingEnabled}
                   />
                 ))
               )}
@@ -657,17 +679,33 @@ export default function ExploreScreen() {
                         <Text style={styles.gymBtnPrimaryText}>View Gym</Text>
                         <Ionicons name="chevron-forward" size={14} color="#1B2F6B" />
                       </Pressable>
-                      <Pressable
-                        delayPressIn={0}
-                        hitSlop={TOUCH_HIT_SLOP}
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                          openGym(gym, 'Classes');
-                        }}
-                        style={({ pressed }) => [styles.gymBtnOutline, pressed && { opacity: 0.75 }]}
-                      >
-                        <Text style={styles.gymBtnOutlineText}>Book Class</Text>
-                      </Pressable>
+                      {classBookingEnabled ? (
+                        <Pressable
+                          delayPressIn={0}
+                          hitSlop={TOUCH_HIT_SLOP}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            openGym(gym, 'Classes');
+                          }}
+                          style={({ pressed }) => [styles.gymBtnOutline, pressed && { opacity: 0.75 }]}
+                        >
+                          <Text style={styles.gymBtnOutlineText}>Book Class</Text>
+                        </Pressable>
+                      ) : (
+                        <View
+                          style={[
+                            styles.gymBtnOutline,
+                            {
+                              backgroundColor: 'rgba(107,123,153,0.2)',
+                              borderColor: 'rgba(107,123,153,0.3)',
+                            },
+                          ]}
+                        >
+                          <Text style={{ color: '#6B7B99', fontSize: 13, fontWeight: '700' }}>
+                            Coming Soon
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </View>
                 </View>
@@ -751,15 +789,31 @@ export default function ExploreScreen() {
                           ? `From GHS ${trainer.price}/session`
                           : 'See profile for pricing'}
                       </Text>
-                      <Pressable
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                          openTrainer(trainer);
-                        }}
-                        style={styles.bookSessionBtn}
-                      >
-                        <Text style={styles.bookSessionText}>Book Session</Text>
-                      </Pressable>
+                      {trainerBookingEnabled ? (
+                        <Pressable
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            openTrainer(trainer);
+                          }}
+                          style={styles.bookSessionBtn}
+                        >
+                          <Text style={styles.bookSessionText}>Book Session</Text>
+                        </Pressable>
+                      ) : (
+                        <View
+                          style={[
+                            styles.bookSessionBtn,
+                            {
+                              backgroundColor: 'rgba(107,123,153,0.2)',
+                              borderColor: 'rgba(107,123,153,0.3)',
+                            },
+                          ]}
+                        >
+                          <Text style={{ color: '#6B7B99', fontSize: 13, fontWeight: '700' }}>
+                            Coming Soon
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </View>
                 </View>

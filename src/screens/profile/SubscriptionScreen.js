@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PaystackWebView from '../../components/PaystackWebView';
 import PaymentMethodSelector from '../../components/PaymentMethodSelector';
 import { useUser } from '../../context/UserContext';
-import useFeatureFlags from '../../hooks/useFeatureFlags';
+import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { supabase } from '../../lib/supabase';
 import {
   PLANS,

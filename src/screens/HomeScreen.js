@@ -17,6 +17,7 @@ import { loadGyms, getFeaturedGyms } from '../data/gyms';
 import { loadTrainers } from '../data/trainers';
 import { getNextClassPreview } from '../data/exploreGyms';
 import { useBooking } from '../context/BookingContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { useUser } from '../context/UserContext';
 import { useAppNavigation } from '../context/AppNavigationContext';
 import { getMembershipLabel } from '../utils/workoutPlan';
@@ -725,6 +726,9 @@ export default function HomeScreen() {
 }
 
 function FeaturedNearYouSection({ gym, trainer, onOpenGym, onBookClass, onOpenTrainer }) {
+  const { isEnabled } = useFeatureFlags();
+  const classBookingEnabled = isEnabled('gym_class_booking');
+  const trainerBookingEnabled = isEnabled('trainer_session_booking');
   const nextPreview = gym ? getNextClassPreview(gym) : null;
   const gymSub = nextPreview?.chip?.replace(/^Next: /, '') || 'View classes';
 
@@ -743,9 +747,24 @@ function FeaturedNearYouSection({ gym, trainer, onOpenGym, onBookClass, onOpenTr
             <Text style={styles.featuredGymName}>{gym.name}</Text>
             <Text style={styles.featuredGymSub}>{gym.location} · {gymSub}</Text>
           </View>
-          <TouchableOpacity activeOpacity={0.75} onPress={onBookClass} style={styles.featuredActionBtn}>
-            <Text style={styles.featuredActionBtnText}>Book Class</Text>
-          </TouchableOpacity>
+          {classBookingEnabled ? (
+            <TouchableOpacity activeOpacity={0.75} onPress={onBookClass} style={styles.featuredActionBtn}>
+              <Text style={styles.featuredActionBtnText}>Book Class</Text>
+            </TouchableOpacity>
+          ) : (
+            <View
+              style={[
+                styles.featuredActionBtn,
+                {
+                  backgroundColor: 'rgba(107,123,153,0.2)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(107,123,153,0.3)',
+                },
+              ]}
+            >
+              <Text style={{ color: '#6B7B99', fontSize: 12, fontWeight: '700' }}>Coming Soon</Text>
+            </View>
+          )}
         </View>
       </TouchableOpacity>
       ) : null}
@@ -765,9 +784,24 @@ function FeaturedNearYouSection({ gym, trainer, onOpenGym, onBookClass, onOpenTr
           </Text>
           <Text style={styles.featuredTrainerPrice}>From GHS {trainer.onlinePrice}/session</Text>
         </View>
-        <TouchableOpacity activeOpacity={0.75} onPress={onOpenTrainer} style={styles.featuredActionBtn}>
-          <Text style={styles.featuredActionBtnText}>Book</Text>
-        </TouchableOpacity>
+        {trainerBookingEnabled ? (
+          <TouchableOpacity activeOpacity={0.75} onPress={onOpenTrainer} style={styles.featuredActionBtn}>
+            <Text style={styles.featuredActionBtnText}>Book</Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={[
+              styles.featuredActionBtn,
+              {
+                backgroundColor: 'rgba(107,123,153,0.2)',
+                borderWidth: 1,
+                borderColor: 'rgba(107,123,153,0.3)',
+              },
+            ]}
+          >
+            <Text style={{ color: '#6B7B99', fontSize: 12, fontWeight: '700' }}>Coming Soon</Text>
+          </View>
+        )}
       </TouchableOpacity>
       ) : null}
     </View>

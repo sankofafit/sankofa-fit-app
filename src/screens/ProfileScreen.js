@@ -15,6 +15,7 @@ import PressableScale from '../components/PressableScale';
 import GradientScreen from '../components/GradientScreen';
 import { useBooking } from '../context/BookingContext';
 import { useUser } from '../context/UserContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { useAppNavigation } from '../context/AppNavigationContext';
 import { useGoHome } from '../utils/navigationEvents';
 import { useSidebar } from '../context/SidebarContext';
@@ -121,14 +122,22 @@ const SETTING_KEYS = {
   'Rate Sankofa Fit': 'rate',
 };
 
-function buildSettingsRows(userData) {
+function buildSettingsRows(userData, isEnabled) {
   const tierLabel = getMembershipLabel(userData?.subscription_tier);
   const phoneSnippet = userData?.phone_gh
     ? userData.phone_gh.replace(/\s/g, '').slice(-7)
     : '…';
+  const subscriptionsAvailable =
+    isEnabled('pro_subscription') || isEnabled('premium_subscription');
   return [
     { icon: 'person-outline', title: 'Edit Profile' },
-    { icon: 'card-outline', title: 'Subscription', subtitle: `${tierLabel} · GHS 70/month` },
+    {
+      icon: 'card-outline',
+      title: 'Subscription',
+      subtitle: subscriptionsAvailable
+        ? `${tierLabel} · GHS 70/month`
+        : 'Coming Soon',
+    },
     { icon: 'notifications-outline', title: 'Notifications' },
     {
       icon: 'wallet-outline',
@@ -162,9 +171,12 @@ export default function ProfileScreen() {
   const [recentBookings, setRecentBookings] = useState([]);
   const todayWorkoutCaloriesRef = useRef(0);
   const { userData, refreshUser } = useUser();
+  const { isEnabled } = useFeatureFlags();
+  const tier = (userData?.subscription_tier || 'free').toLowerCase();
+  const isFreeTier = tier === 'free';
   const { profileOverlay, clearProfileOverlay, activeTab } = useAppNavigation();
   const { openSidebarScreen } = useSidebar();
-  const settingsRows = useMemo(() => buildSettingsRows(userData), [userData]);
+  const settingsRows = useMemo(() => buildSettingsRows(userData, isEnabled), [userData, isEnabled]);
   const booking = useBooking();
   const { openGym, openTrainer } = booking;
   const stepProgress = Math.min(profileStats.steps / STEP_GOAL, 1);
@@ -464,6 +476,39 @@ export default function ProfileScreen() {
               <View style={styles.badgeWrap}>
                 <MembershipBadge tier={userData?.subscription_tier} />
               </View>
+              {isFreeTier && isEnabled('pro_subscription') ? (
+                <TouchableOpacity
+                  delayPressIn={0}
+                  activeOpacity={0.85}
+                  onPress={() => setShowSubscription(true)}
+                  style={{
+                    marginTop: 12,
+                    backgroundColor: '#F5C842',
+                    borderRadius: 12,
+                    paddingVertical: 10,
+                    paddingHorizontal: 20,
+                  }}
+                >
+                  <Text style={{ color: '#1B2F6B', fontSize: 14, fontWeight: '800' }}>
+                    Upgrade to Pro
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+              {isFreeTier &&
+              !isEnabled('pro_subscription') &&
+              !isEnabled('premium_subscription') ? (
+                <Text
+                  style={{
+                    color: '#6B7B99',
+                    fontSize: 13,
+                    fontWeight: '600',
+                    marginTop: 10,
+                    textAlign: 'center',
+                  }}
+                >
+                  Subscriptions Coming Soon
+                </Text>
+              ) : null}
               <Text style={styles.location}>{userData?.city || 'Ghana'}</Text>
             </View>
 
