@@ -29,6 +29,7 @@ import {
 } from '../lib/paystack';
 import { notifyUserAfterTrainerBooking } from '../lib/bookingService';
 import { logActivity, LOG_ACTIONS } from '../utils/activityLogger';
+import useFeatureFlags from '../hooks/useFeatureFlags';
 import { supabase } from '../lib/supabase';
 import { getAvailableDates, getAvailableSlots } from '../utils/trainerAvailability';
 import ReportTrainerModal from '../components/ReportTrainerModal';
@@ -66,6 +67,7 @@ function isTrainerUuid(value) {
 export default function TrainerDetailScreen({ trainer, onClose }) {
   const { userData } = useUser();
   const { openMessages } = useMessages();
+  const { isEnabled } = useFeatureFlags();
   const bookingRef = useRef({});
 
   const [trainerData, setTrainerData] = useState(() =>
@@ -1075,20 +1077,42 @@ export default function TrainerDetailScreen({ trainer, onClose }) {
           style={styles.bookButtonGradient}
         >
           <View style={styles.actionButtonsRow}>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={openBooking}
-              style={styles.bookSessionBtn}
-            >
-              <LinearGradient
-                colors={['#F5C842', '#E5B832']}
-                style={styles.bookSessionBtnInner}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            {isEnabled('trainer_session_booking') ? (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={openBooking}
+                style={styles.bookSessionBtn}
               >
-                <Text style={styles.bookSessionBtnText}>Book Session</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={['#F5C842', '#E5B832']}
+                  style={styles.bookSessionBtnInner}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.bookSessionBtnText}>Book Session</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={[
+                  styles.bookSessionBtn,
+                  styles.bookSessionBtnInner,
+                  { backgroundColor: 'rgba(107,123,153,0.3)' },
+                ]}
+              >
+                <Ionicons name="lock-closed-outline" size={16} color="#6B7B99" />
+                <Text
+                  style={{
+                    color: '#6B7B99',
+                    fontSize: 15,
+                    fontWeight: '700',
+                    marginLeft: 8,
+                  }}
+                >
+                  Booking Coming Soon
+                </Text>
+              </View>
+            )}
 
             {renderStatusButton()}
           </View>

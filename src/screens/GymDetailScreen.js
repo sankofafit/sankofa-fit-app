@@ -20,6 +20,7 @@ import RemoteImage from '../components/RemoteImage';
 import { getClassImageUri } from '../data/mediaUrls';
 import GymMembershipModal from '../components/explore/GymMembershipModal';
 import { useBooking } from '../context/BookingContext';
+import useFeatureFlags from '../hooks/useFeatureFlags';
 import { getMembershipPlansForGym } from '../data/gymMembership';
 import { getClassAccentColor } from '../data/exploreClassColors';
 import {
@@ -135,7 +136,7 @@ function StarRow({ rating, count }) {
   );
 }
 
-function ClassCard({ cls, isToday, highlighted, onBookDropIn }) {
+function ClassCard({ cls, isToday, highlighted, onBookDropIn, bookingEnabled = true }) {
   const classColor = getClassAccentColor(cls.name);
   const classImageUrl = cls.image || getClassImageUri(cls.name);
   const spotsUrgent = cls.spotsLeft < 5;
@@ -175,18 +176,36 @@ function ClassCard({ cls, isToday, highlighted, onBookDropIn }) {
           </View>
           <Text style={styles.classPrice}>GHS {cls.price} / session</Text>
         </View>
-        <TouchableOpacity
-          delayPressIn={0}
-          onPress={() => onBookDropIn(cls)}
-          activeOpacity={0.75}
-          hitSlop={TAP_HIT}
-          style={styles.bookDropInBtnNew}
-        >
-          <Ionicons name="calendar" size={16} color="#1B2F6B" />
-          <Text style={styles.bookDropInTextNew}>
-            Book{'\n'}Drop-In
-          </Text>
-        </TouchableOpacity>
+        {bookingEnabled ? (
+          <TouchableOpacity
+            delayPressIn={0}
+            onPress={() => onBookDropIn(cls)}
+            activeOpacity={0.75}
+            hitSlop={TAP_HIT}
+            style={styles.bookDropInBtnNew}
+          >
+            <Ionicons name="calendar" size={16} color="#1B2F6B" />
+            <Text style={styles.bookDropInTextNew}>
+              Book{'\n'}Drop-In
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={[
+              styles.bookDropInBtnNew,
+              { backgroundColor: 'rgba(107,123,153,0.3)' },
+            ]}
+          >
+            <Text style={{
+              color: '#6B7B99',
+              fontSize: 13,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}>
+              🔒 Coming Soon
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -201,6 +220,7 @@ export default function GymDetailScreen({
 }) {
   const insets = useSafeAreaInsets();
   const { bookClass } = useBooking();
+  const { isEnabled } = useFeatureFlags();
   const todayKey = getTodayDayKey();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedDay, setSelectedDay] = useState(todayKey);
@@ -659,6 +679,7 @@ export default function GymDetailScreen({
                     isToday={selectedDay === todayKey}
                     highlighted={cls.id === highlightClassId}
                     onBookDropIn={openBooking}
+                    bookingEnabled={isEnabled('gym_class_booking')}
                   />
                 ))}
               </>

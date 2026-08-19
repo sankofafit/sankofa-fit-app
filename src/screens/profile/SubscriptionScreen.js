@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PaystackWebView from '../../components/PaystackWebView';
 import PaymentMethodSelector from '../../components/PaymentMethodSelector';
 import { useUser } from '../../context/UserContext';
+import useFeatureFlags from '../../hooks/useFeatureFlags';
 import { supabase } from '../../lib/supabase';
 import {
   PLANS,
@@ -90,6 +91,7 @@ const SUBSCRIPTION_PLANS = [
 
 export default function SubscriptionScreen({ onClose }) {
   const { userData, refreshUser } = useUser();
+  const { isEnabled } = useFeatureFlags();
   const tier = (userData?.subscription_tier || 'free').toLowerCase();
   const isPro = tier === 'pro';
   const isPremium = tier === 'premium';
@@ -295,6 +297,12 @@ export default function SubscriptionScreen({ onClose }) {
         {SUBSCRIPTION_PLANS.map((plan) => {
           const isCurrent = tier === plan.id;
           const showUpgrade = canUpgradeToPlan(plan.id);
+          const subscriptionEnabled =
+            plan.id === 'pro'
+              ? isEnabled('pro_subscription')
+              : plan.id === 'premium'
+                ? isEnabled('premium_subscription')
+                : true;
           return (
             <View
               key={plan.id}
@@ -328,7 +336,7 @@ export default function SubscriptionScreen({ onClose }) {
                 <TouchableOpacity delayPressIn={0} style={styles.downgradeBtn} onPress={() => handleUpgrade('free')}>
                   <Text style={styles.downgradeText}>Downgrade</Text>
                 </TouchableOpacity>
-              ) : showUpgrade ? (
+              ) : showUpgrade && subscriptionEnabled ? (
                 <TouchableOpacity delayPressIn={0}
                   style={ps.goldButton}
                   activeOpacity={0.75}
@@ -340,6 +348,12 @@ export default function SubscriptionScreen({ onClose }) {
                       : 'Upgrade to Pro — GHS 70/month'}
                   </Text>
                 </TouchableOpacity>
+              ) : showUpgrade && !subscriptionEnabled ? (
+                <View style={styles.currentBtn}>
+                  <Text style={{ color: '#6B7B99', fontWeight: '700', textAlign: 'center' }}>
+                    Subscriptions Coming Soon
+                  </Text>
+                </View>
               ) : plan.id === 'pro' && isPremium ? (
                 <View style={styles.currentBtn}>
                   <Text style={styles.currentBtnText}>Included in Premium ✓</Text>

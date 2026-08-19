@@ -41,6 +41,7 @@ import { AppNavigationProvider, TAB_ORDER, useAppNavigation } from './src/contex
 import { NotificationProvider } from './src/context/NotificationContext';
 import NotificationPanel from './src/components/NotificationPanel';
 import { UserProvider } from './src/context/UserContext';
+import { FeatureFlagsProvider } from './src/hooks/useFeatureFlags';
 import { StepGoalProvider } from './src/context/StepGoalContext';
 import { MessagesProvider, useMessages } from './src/context/MessagesContext';
 import MessagesScreen from './src/screens/MessagesScreen';
@@ -599,9 +600,11 @@ export default function App() {
     return (
       <ErrorBoundary>
         <SafeAreaProvider>
-          <UserProvider>
-            <OnboardingScreen session={session} onComplete={() => setOnboardingComplete(true)} />
-          </UserProvider>
+          <FeatureFlagsProvider>
+            <UserProvider>
+              <OnboardingScreen session={session} onComplete={() => setOnboardingComplete(true)} />
+            </UserProvider>
+          </FeatureFlagsProvider>
         </SafeAreaProvider>
       </ErrorBoundary>
     );
@@ -610,9 +613,11 @@ export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <UserProvider>
-          <MainApp />
-        </UserProvider>
+        <FeatureFlagsProvider>
+          <UserProvider>
+            <MainApp />
+          </UserProvider>
+        </FeatureFlagsProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );
